@@ -19,20 +19,22 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('Vijay@337891');
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [isBiometricSupported, setIsBiometricSupported] = useState(true);
   const [biometricAttempted, setBiometricAttempted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    tokencheck();
-    // checkBiometricSupport(); 
+    checkBiometricSupport();
   }, []);
 
   const tokencheck = async () => {
+    debugger 
+    setIsLoading(true);
     const token = await AsyncStorage.getItem('authToken');
     console.log(token, "PortfolioScreen");
-    if (!token) return;
+    // if (!token) return;
     try {
+      debugger
       const res = await fetchAccountSummary();
       console.log(res?.status, "PortfolioScreen");
       if (res?.status === 200) {
@@ -44,6 +46,7 @@ const LoginScreen = () => {
     } catch (error) {
       console.log("Token check error:", error);
     }
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -51,6 +54,19 @@ const LoginScreen = () => {
       handleFaceIdLogin();
     }
   }, [isBiometricSupported, biometricAttempted]);
+
+  // const checkBiometricSupport = async () => {
+  //   try {
+  //     const hasHardware = await LocalAuthentication.hasHardwareAsync();
+  //     const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+
+  //     if (hasHardware && supportedTypes.length > 0) {
+  //       setIsBiometricSupported(true);
+  //     }
+  //   } catch (error) {
+  //     console.log('Biometric check error:', error);
+  //   }
+  // };
 
   const checkBiometricSupport = async () => {
     try {
@@ -64,6 +80,8 @@ const LoginScreen = () => {
       console.log('Biometric check error:', error);
     }
   };
+
+
 
   const handleForgotPassword = async () => {
     if (email) {
@@ -100,25 +118,54 @@ const LoginScreen = () => {
     setShowPassword(!showPassword);
   };
 
+  // const handleFaceIdLogin = async () => {
+  //   setBiometricAttempted(true);
+  //   try {
+  //     const result = await LocalAuthentication.authenticateAsync({
+  //       promptMessage: 'Authenticate to login',
+  //       cancelLabel: 'Cancel',
+  //     });
+
+  //     if (result.success) {
+  //       Alert.alert('Success', 'Authentication successful!');
+  //       // Proceed with your login logic
+  //     }
+  //   } catch (error) {
+  //     console.log('Biometric error:', error);
+  //     if (biometricAttempted) {
+  //       Alert.alert('Error', 'Authentication failed');
+  //     }
+  //   }
+  // };
+
+
   const handleFaceIdLogin = async () => {
     setBiometricAttempted(true);
-    try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to login',
-        cancelLabel: 'Cancel',
-      });
 
-      if (result.success) {
-        Alert.alert('Success', 'Authentication successful!');
-        // Proceed with your login logic
+    try {
+      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+
+      if (
+        supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION) ||
+        supportedTypes.length > 0
+      ) {
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Authenticate to login',
+          cancelLabel: 'Cancel',
+        });
+        if (result.success) {
+          Alert.alert('Success', 'Authentication successful!');
+          await tokencheck(); // ✅ Only run this *after* biometric is successful
+        } else {
+          Alert.alert('Failed', 'Biometric authentication failed');
+        }
       }
     } catch (error) {
+      Alert.alert('Error', 'Biometric authentication error occurred');
       console.log('Biometric error:', error);
-      if (biometricAttempted) {
-        Alert.alert('Error', 'Authentication failed');
-      }
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>

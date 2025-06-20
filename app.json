@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AFC-Mobile_Conver",
-    "slug": "AFC-Mobile_Conver",
+    "name": "AFC-Mobile",
+    "slug": "AFC-Mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

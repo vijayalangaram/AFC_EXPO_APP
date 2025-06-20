@@ -17,7 +17,7 @@ import { DrawerNavigationProp } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchAccountSummary } from '../api/account';
 import { RootStackParamList } from '../../App';
-import * as Localization from 'expo-localization';
+import * as Localization from 'expo-localization'; 
 
 const HEADER_HEIGHT = 84;
 
@@ -29,7 +29,7 @@ type DrawerParamList = {
 
 // Corrected navigation props
 type PortfolioScreenNavigationProp = DrawerNavigationProp<DrawerParamList>;
- 
+
 // Currency symbol mapping (same as original)
 // const getCurrencySymbol = (currencyCode) => {
 //   const currencySymbols = {
@@ -230,7 +230,7 @@ export const formatCurrency = (currencyCode: string, amount: number | string): s
     console.warn('Currency formatting failed:', error);
     return `${currencyCode} ${amount}`;
   }
-};
+}; 
 
 // Enhanced formatting function with TypeScript
 // const formatCurrency = (currencyType: string, amount: string | number) => {
@@ -308,8 +308,9 @@ const PortfolioScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigation = useNavigation<PortfolioScreenNavigationProp>();
   const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
-
+  
   useEffect(() => {
+    tokencheck();
     const fetchData = async () => {
       try {
         setIsLoading(true);
@@ -322,9 +323,15 @@ const PortfolioScreen: React.FC = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
+
+
+  const tokencheck = async () => {
+    debugger 
+    const token = await AsyncStorage.getItem('authToken');
+    console.log(token, "PortfolioScreen");
+  }
 
   const handleAccountPress = async (item: Account) => {
     try {

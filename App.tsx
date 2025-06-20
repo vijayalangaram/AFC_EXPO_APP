@@ -77,7 +77,7 @@ export default function App() {
         />
         <Stack.Screen
           name="PortfolioScreen"
-          component={MainDrawer}
+          component={MainDrawer} 
           options={{
             gestureEnabled: false, // Disable swipe back on iOS
           }}
