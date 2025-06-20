@@ -7,6 +7,8 @@ import { login } from '../api/auth';
 import { fetchAccountSummary } from '../api/account';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../../App'; // Adjust path as needed
+import { ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+
 
 // Define navigation prop type for this screen
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -19,22 +21,39 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('Vijay@337891');
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(true);
+  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [biometricAttempted, setBiometricAttempted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+
   useEffect(() => {
-    checkBiometricSupport();
+    const initiateBiometricFlow = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetchAccountSummary();
+        console.log(res?.status, "fetchAccountSummary status");
+
+        if (res?.status === 200) {
+          const hasHardware = await LocalAuthentication.hasHardwareAsync();
+          const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+          if (hasHardware && supportedTypes.length > 0) {
+            setIsBiometricSupported(true);
+            await handleFaceIdLogin(); // 🟢 Only call Face ID if eligible
+          }
+        }
+      } catch (error) {
+        console.log("fetchAccountSummary or biometric setup failed:", error);
+      }
+      setIsLoading(false);
+    };
+
+    initiateBiometricFlow();
   }, []);
 
+
   const tokencheck = async () => {
-    debugger 
     setIsLoading(true);
-    const token = await AsyncStorage.getItem('authToken');
-    console.log(token, "PortfolioScreen");
-    // if (!token) return;
     try {
-      debugger
       const res = await fetchAccountSummary();
       console.log(res?.status, "PortfolioScreen");
       if (res?.status === 200) {
@@ -55,24 +74,11 @@ const LoginScreen = () => {
     }
   }, [isBiometricSupported, biometricAttempted]);
 
-  // const checkBiometricSupport = async () => {
-  //   try {
-  //     const hasHardware = await LocalAuthentication.hasHardwareAsync();
-  //     const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-
-  //     if (hasHardware && supportedTypes.length > 0) {
-  //       setIsBiometricSupported(true);
-  //     }
-  //   } catch (error) {
-  //     console.log('Biometric check error:', error);
-  //   }
-  // };
 
   const checkBiometricSupport = async () => {
     try {
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-
       if (hasHardware && supportedTypes.length > 0) {
         setIsBiometricSupported(true);
       }
@@ -80,7 +86,6 @@ const LoginScreen = () => {
       console.log('Biometric check error:', error);
     }
   };
-
 
 
   const handleForgotPassword = async () => {
@@ -138,27 +143,22 @@ const LoginScreen = () => {
   //   }
   // };
 
-
   const handleFaceIdLogin = async () => {
     setBiometricAttempted(true);
 
     try {
-      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
-
-      if (
-        supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION) ||
-        supportedTypes.length > 0
-      ) {
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Authenticate to login',
-          cancelLabel: 'Cancel',
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Authenticate to continue',
+        cancelLabel: 'Cancel',
+      });
+      if (result.success) {
+        // Alert.alert('Success', 'Authentication successful!'); 
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'PortfolioScreen' }],
         });
-        if (result.success) {
-          Alert.alert('Success', 'Authentication successful!');
-          await tokencheck(); // ✅ Only run this *after* biometric is successful
-        } else {
-          Alert.alert('Failed', 'Biometric authentication failed');
-        }
+      } else {
+        Alert.alert('Failed', 'Biometric authentication failed');
       }
     } catch (error) {
       Alert.alert('Error', 'Biometric authentication error occurred');
@@ -208,12 +208,11 @@ const LoginScreen = () => {
         </View>
 
         {isLoading && (
-          <ActivityIndicator
-            size="large"
-            color="#0071CF"
-            style={styles.loader}
-          />
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
         )}
+
 
         <View style={styles.forgotPasswordContainer}>
           <TouchableOpacity onPress={handleForgotPassword} >
@@ -401,12 +400,24 @@ const styles = StyleSheet.create({
   biometricButton: {
     alignSelf: 'center',
     marginTop: 10,
+    marginBottom: 20, // ✅ prevents overlap with bottom
   },
   biometricImage: {
     width: 100,
     height: 100,
     resizeMode: 'contain',
     alignSelf: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent black
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999, // ensure it's on top
   },
 });
 

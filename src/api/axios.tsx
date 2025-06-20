@@ -34,36 +34,29 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
+      await AsyncStorage.multiRemove(['authToken', 'accountId']);
       await AsyncStorage.removeItem('authToken');
-      Alert.alert('Session Expired', 'Please click OK to login again.', [
-        {
-          text: 'OK',
-          // onPress: () => {
-          //   // Navigate to Login screen if navigationRef is available
-          //   if (navigationRef.current) {
-          //     navigationRef.current.reset({
-          //       index: 0,
-          //       routes: [{ name: 'Login' }],
-          //     });
-          //   }
-          // },
-          onPress: () => {
-            const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
-            if (currentRoute !== 'Login') {
-              navigationRef.current?.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            }
-            // if (navigationRef.current?.getCurrentRoute()?.name !== 'Login') {
-            //   navigationRef.current.reset({
-            //     index: 0,
-            //     routes: [{ name: 'Login' }],
-            //   });
-            // }
-          }
-        },
-      ]);
+      const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+      if (currentRoute !== 'Login') {
+        navigationRef.current?.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+      // Alert.alert('Session Expired', 'Please click OK to login again.', [
+      //   {
+      //     text: 'OK',
+      //     onPress: () => {
+      //       const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+      //       if (currentRoute !== 'Login') {
+      //         navigationRef.current?.reset({
+      //           index: 0,
+      //           routes: [{ name: 'Login' }],
+      //         });
+      //       }
+      //     }
+      //   },
+      // ]);
     }
     return Promise.reject(error);
   }

@@ -21,10 +21,11 @@ const accounts = [
 const CustomDrawer = ({ navigation }: DrawerContentComponentProps) => {
 
   const handleLogout = async () => {
-    debugger 
+    debugger
     // Clear any stored authentication tokens
     // AsyncStorage.removeItem('authToken'); // Uncomment if using AsyncStorage
     await AsyncStorage.removeItem('authToken');
+    await AsyncStorage.clear(); 
     // Reset navigation stack and navigate to Login 
     navigation.reset({
       index: 0,
