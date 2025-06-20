@@ -25,12 +25,13 @@ const CustomDrawer = ({ navigation }: DrawerContentComponentProps) => {
     // Clear any stored authentication tokens
     // AsyncStorage.removeItem('authToken'); // Uncomment if using AsyncStorage
     await AsyncStorage.removeItem('authToken');
-    await AsyncStorage.clear(); 
-    // Reset navigation stack and navigate to Login 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
+    await AsyncStorage.removeItem('accountId'),
+      // await AsyncStorage.clear();
+      // Reset navigation stack and navigate to Login 
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
   };
 
   return (

@@ -9,6 +9,7 @@ import { setAuthToken } from '../utils/auth';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App'; // Adjust path as needed 
+import * as Clipboard from 'expo-clipboard'; // For Expo
 
 // Define route params for this screen
 type OTPValidationRouteProp = RouteProp<RootStackParamList, 'OTPValidation'>;
@@ -53,16 +54,29 @@ const OTPValidation: React.FC<OTPValidationProps> = ({ navigation, route }) => {
   };
 
   const extractOtpFromClipboard = async () => {
-    if (Platform.OS === 'web') return;
+    try {
+      const content = await Clipboard.getStringAsync(); // Expo
+      // const content = await Clipboard.getString(); // React Native CLI
 
-    // Note: Clipboard API is deprecated in favor of expo-clipboard
-    const { Clipboard } = require('react-native');
-    const content = await Clipboard.getString();
-    const otpRegex = /\b\d{6}\b/;
-    const match = content.match(otpRegex);
-    if (match) {
-      const otpArray = match[0].split('');
-      setOtp(otpArray);
+      // Improved OTP matching (6-digit code)
+      const otpRegex = /\b\d{6}\b/;
+      const match = content.match(otpRegex);
+
+      if (match) {
+        const otpCode = match[0];
+        const otpArray = otpCode.split('').slice(0, 6); // Ensure only 6 digits
+
+        // Update OTP state and focus last input
+        setOtp(otpArray);
+        otpInputRefs.current[Math.min(otpArray.length - 1, 5)]?.focus();
+
+        // Auto-submit if enabled in your useEffect
+      } else {
+        Alert.alert('No OTP Found', 'Clipboard does not contain a valid 6-digit OTP');
+      }
+    } catch (error) {
+      console.error('Clipboard error:', error);
+      Alert.alert('Error', 'Failed to read from clipboard');
     }
   };
 
@@ -97,7 +111,7 @@ const OTPValidation: React.FC<OTPValidationProps> = ({ navigation, route }) => {
           await setAuthToken(token);
         }
         navigation.navigate('PortfolioScreen', {
-        }); 
+        });
       } else {
         Alert.alert('Invalid OTP', res.data.message || '');
       }

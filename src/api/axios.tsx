@@ -36,27 +36,27 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       await AsyncStorage.multiRemove(['authToken', 'accountId']);
       await AsyncStorage.removeItem('authToken');
-      const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
-      if (currentRoute !== 'Login') {
-        navigationRef.current?.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
-      }
-      // Alert.alert('Session Expired', 'Please click OK to login again.', [
-      //   {
-      //     text: 'OK',
-      //     onPress: () => {
-      //       const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
-      //       if (currentRoute !== 'Login') {
-      //         navigationRef.current?.reset({
-      //           index: 0,
-      //           routes: [{ name: 'Login' }],
-      //         });
-      //       }
-      //     }
-      //   },
-      // ]);
+      // const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+      // if (currentRoute !== 'Login') {
+      //   navigationRef.current?.reset({
+      //     index: 0,
+      //     routes: [{ name: 'Login' }],
+      //   });
+      // }
+      Alert.alert('Session Expired', 'Please click OK to login again.', [
+        { 
+          text: 'OK',
+          onPress: () => {
+            const currentRoute = navigationRef.current?.getCurrentRoute()?.name;
+            if (currentRoute !== 'Login') {
+              navigationRef.current?.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
+            }
+          }
+        },
+      ]);
     }
     return Promise.reject(error);
   }

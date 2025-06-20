@@ -10,6 +10,7 @@ import { RootStackParamList } from '../../App'; // Adjust path as needed
 import { ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 
 
+
 // Define navigation prop type for this screen
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -17,8 +18,8 @@ const LoginScreen = () => {
   // Initialize navigation with proper typing
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
-  const [email, setEmail] = useState('vijayalangaram.t@synergech.com');
-  const [password, setPassword] = useState('Vijay@337891');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(true);
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
@@ -27,12 +28,68 @@ const LoginScreen = () => {
 
 
   useEffect(() => {
+    debugger
+
+    let isMounted = true; // To prevent state updates after component unmounts
+
+    const loadCredentials = async () => {
+      try {
+        // Get all items at once (more efficient)
+        const [savedEmail, savedPassword, rememberStatus] = await Promise.all([
+          AsyncStorage.getItem('savedEmail'),
+          AsyncStorage.getItem('savedPassword'),
+          AsyncStorage.getItem('rememberDevice'),
+        ]);
+
+        if (isMounted && savedEmail && savedPassword && rememberStatus === 'true') {
+          setEmail(savedEmail);
+          setPassword(savedPassword);
+          setRememberDevice(true);
+        }
+      } catch (error) {
+        console.error('Error loading credentials:', error);
+        if (isMounted) {
+          // Optional: Reset to default state on error
+          setEmail('');
+          setPassword('');
+          setRememberDevice(false);
+        }
+      }
+    };
+    loadCredentials();
+
+    return () => {
+      isMounted = false; // Cleanup function
+    };
+  }, []); // Empty array ensures this runs only once on mount
+
+
+  const handleRememberDevice = async () => {
+    const newRememberStatus = !rememberDevice;
+    setRememberDevice(newRememberStatus);
+    try {
+      if (newRememberStatus) {
+        // Save credentials
+        await AsyncStorage.setItem('savedEmail', email);
+        await AsyncStorage.setItem('savedPassword', password);
+        await AsyncStorage.setItem('rememberDevice', 'true');
+      } else {
+        // Remove credentials
+        await AsyncStorage.removeItem('savedEmail');
+        await AsyncStorage.removeItem('savedPassword');
+        await AsyncStorage.removeItem('rememberDevice');
+      }
+    } catch (error) {
+      console.log('Error saving credentials:', error);
+    }
+  };
+
+  useEffect(() => {
     const initiateBiometricFlow = async () => {
       setIsLoading(true);
       try {
         const res = await fetchAccountSummary();
         console.log(res?.status, "fetchAccountSummary status");
-
         if (res?.status === 200) {
           const hasHardware = await LocalAuthentication.hasHardwareAsync();
           const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
@@ -46,27 +103,9 @@ const LoginScreen = () => {
       }
       setIsLoading(false);
     };
-
     initiateBiometricFlow();
   }, []);
 
-
-  const tokencheck = async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetchAccountSummary();
-      console.log(res?.status, "PortfolioScreen");
-      if (res?.status === 200) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'PortfolioScreen' }],
-        });
-      }
-    } catch (error) {
-      console.log("Token check error:", error);
-    }
-    setIsLoading(false);
-  }
 
   useEffect(() => {
     if (isBiometricSupported && !biometricAttempted) {
@@ -148,7 +187,7 @@ const LoginScreen = () => {
 
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to continue',
+        promptMessage: 'Authenticate to continue for Launch',
         cancelLabel: 'Cancel',
       });
       if (result.success) {
@@ -187,14 +226,13 @@ const LoginScreen = () => {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-
         <Text style={styles.label}>Password*</Text>
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.passwordInput}
             value={showPassword ? '**********************' : password}
             onChangeText={setPassword}
-            placeholder="***********"
+            // placeholder="***********"
             secureTextEntry={showPassword}
           />
           <TouchableOpacity
@@ -213,7 +251,6 @@ const LoginScreen = () => {
           </View>
         )}
 
-
         <View style={styles.forgotPasswordContainer}>
           <TouchableOpacity onPress={handleForgotPassword} >
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -223,7 +260,7 @@ const LoginScreen = () => {
         <View style={styles.checkboxContainer}>
           <TouchableOpacity
             style={styles.checkbox}
-            onPress={() => setRememberDevice(!rememberDevice)}
+            onPress={handleRememberDevice}
           >
             {rememberDevice ? (
               <Text style={styles.checkboxChecked}>✓</Text>
