@@ -137,11 +137,11 @@ const OTPValidation: React.FC<OTPValidationProps> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentimagetop}>
-        <Image source={require('../../assets/images.png')} style={styles.image} />
+        <Image source={require('../../assets/AfcTraverseLogo.png')} style={styles.image} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Welcome</Text>
+        <Text style={styles.title}>Welcome </Text>
 
         <Text style={styles.text}>
           We have sent a One-Time Password (OTP){'\n'}
@@ -149,12 +149,12 @@ const OTPValidation: React.FC<OTPValidationProps> = ({ navigation, route }) => {
           {starmailidcovenver}
         </Text>
 
-        <TouchableOpacity onPress={handleOpenEmailApp}>
-          <Text style={[styles.text, styles.linkText]}>
-            Please check your inbox and enter the{'\n'}
-            OTP to proceed.
-          </Text>
-        </TouchableOpacity>
+        {/* <TouchableOpacity onPress={handleOpenEmailApp}> */}
+        <Text style={[styles.text, styles.linkText]}>
+          Please check your inbox and enter the{'\n'}
+          OTP to proceed.
+        </Text>
+        {/* </TouchableOpacity> */}
 
         {/* OTP Input Boxes */}
         <View style={styles.otpContainer}>
@@ -211,8 +211,8 @@ const OTPValidation: React.FC<OTPValidationProps> = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   linkText: {
-    textDecorationLine: 'underline',
-    color: '#4DA6FF',
+    // textDecorationLine: 'underline',
+    // color: '#4DA6FF', 
   },
   pasteText: {
     color: '#4DA6FF',
@@ -241,8 +241,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   image: {
-    width: 200,
-    height: 130,
+    width: 185,
+    height: 80,
     resizeMode: 'contain',
     alignSelf: 'center',
   },
@@ -322,9 +322,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
     borderRadius: 5,
-    color: '#fff',
+    color: '#000', // Changed text color to black for better visibility on white
     fontSize: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#fff',
   },
   otpBoxError: {
     borderColor: 'red',

@@ -28,7 +28,7 @@ const LoginScreen = () => {
 
 
   useEffect(() => {
-    debugger
+    // debugger
 
     let isMounted = true; // To prevent state updates after component unmounts
 
@@ -64,7 +64,10 @@ const LoginScreen = () => {
   }, []); // Empty array ensures this runs only once on mount
 
 
+
+
   const handleRememberDevice = async () => {
+    // debugger
     const newRememberStatus = !rememberDevice;
     setRememberDevice(newRememberStatus);
     try {
@@ -74,10 +77,14 @@ const LoginScreen = () => {
         await AsyncStorage.setItem('savedPassword', password);
         await AsyncStorage.setItem('rememberDevice', 'true');
       } else {
+        // debugger
         // Remove credentials
         await AsyncStorage.removeItem('savedEmail');
         await AsyncStorage.removeItem('savedPassword');
         await AsyncStorage.removeItem('rememberDevice');
+        setEmail("");
+        setPassword("");
+        setRememberDevice(false);
       }
     } catch (error) {
       console.log('Error saving credentials:', error);
@@ -209,12 +216,12 @@ const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentimagetop}>
-        <Image source={require('../../assets/images.png')} style={styles.image} />
+        <Image source={require('../../assets/AfcTraverseLogo.png')} style={styles.image} />
       </View>
-
+ 
       <View style={styles.content}>
         <View style={styles.headerContainerWelcome}>
-          <Text style={styles.welcomeText}>Welcome!</Text>
+          <Text style={styles.welcomeText}>Welcome</Text>
           <Text style={styles.subtitle}>Please enter your details to login.</Text>
         </View>
 
@@ -225,14 +232,15 @@ const LoginScreen = () => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          placeholder="Enter Email"
         />
         <Text style={styles.label}>Password*</Text>
         <View style={styles.passwordContainer}>
           <TextInput
             style={styles.passwordInput}
-            value={showPassword ? '**********************' : password}
+            value={showPassword ? '*********' : password}
             onChangeText={setPassword}
-            // placeholder="***********"
+            placeholder="Enter Password"
             secureTextEntry={showPassword}
           />
           <TouchableOpacity
